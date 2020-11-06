@@ -1,6 +1,7 @@
 /* eslint-env node */
 const http = require('http');
 const url = require('url');
+const middleware = require('./middleware');
 
 const hostname = '127.0.0.1';
 const port = 3000;
@@ -9,7 +10,7 @@ const server = http.createServer((req, res) => {
     
     const {pathname} = url.parse(req.url);
     if (pathname == '/' && req.method == 'GET') {
-        res.end("Pipedrive Challenge GET");
+        res.end(middleware.selectItemsFromDB());
     }
 
     if (pathname == '/' && req.method == 'POST') {
@@ -20,9 +21,8 @@ const server = http.createServer((req, res) => {
             }).on('end', () => {    
             body = Buffer.concat(body).toString();
             //post body \n formatting 
-            body = body.replace(/\\n/g, "\n");
-            
-            res.end("Pipedrive Challenge POST");
+            body = JSON.parse(body);
+            res.end(middleware.insertItemsIntoDB(body));
         });
     } else {
         handleError(404, res);
