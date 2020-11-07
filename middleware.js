@@ -1,9 +1,9 @@
 var dbOperations = require("./db_operations");
 
-var selectItemsFromDB = (searchWord) => {
+var selectItemsFromDB = (searchWord, resolve, reject) => {
   let relations = [];
 
-  dbOperations.getDaughterByName(searchWord, (daughterOrganizations) => {
+   dbOperations.getDaughterByName(searchWord, (daughterOrganizations) => {
     daughterOrganizations.forEach((daughter, index) => {
       let parent_id = daughter.parent_id;
 
@@ -48,8 +48,7 @@ var selectItemsFromDB = (searchWord) => {
 
                     if (index == daughterOrganizations.length - 1) {
                       orderArrayByName(relations);
-                      console.log(relations);
-                      return relations;
+                      resolve(JSON.stringify(relations));
                     }
                   }
                 );
@@ -60,8 +59,6 @@ var selectItemsFromDB = (searchWord) => {
       );
     });
   });
-
-  return "selectItemsFromDB";
 };
 
 var insertItemsIntoDB = (body) => {
@@ -89,7 +86,7 @@ var insertItemsIntoDB = (body) => {
     });
   }
 
-  return "InsertItemsIntoDB";
+  return "Items were inserted into the DB";
 };
 
 var orderArrayByName = (array) => {
