@@ -19,40 +19,58 @@ var insertOrganizationIntoDB = (org_name) => {
 };
 
 var insertDaughterIntoDB = (org_name, parent_id) => {
-    const text = 'INSERT INTO daughters(parent_id, org_name) VALUES($1, $2)ON CONFLICT(parent_id,org_name)DO NOTHING'
-    const values = [parent_id, org_name]
+  const text =
+    "INSERT INTO daughters(parent_id, org_name) VALUES($1, $2)ON CONFLICT(parent_id,org_name)DO NOTHING";
+  const values = [parent_id, org_name];
   pool
-    .query(
-      text, values
-    )
+    .query(text, values)
     .then((res) => console.log("DAUGHTER INSERT", org_name, parent_id))
     .catch((err) => console.error("Error executing query", err.stack));
 };
 
 var getOrganizationByName = (org_name, callback) => {
- 
   return pool
     .query(`SELECT * FROM organizations WHERE org_name = '${org_name}'`)
     .then((res) => {
-        callback(res.rows[0])
+      callback(res.rows[0]);
     })
     .catch((err) => console.error("Error executing query", err.stack));
 };
 
-var getDaughterByName = (org_name, callback) => {
- 
+var getOrganizationByID = (org_id, callback) => {
     return pool
-      .query(`SELECT * FROM organizations WHERE org_name = '${org_name}'`)
+      .query(`SELECT * FROM organizations WHERE id = '${org_id}'`)
       .then((res) => {
-          callback(res.rows[0].id)
+        callback(res.rows);
       })
       .catch((err) => console.error("Error executing query", err.stack));
   };
+
+var getDaughterByName = (org_name, callback) => {
+  return pool
+    .query(`SELECT * FROM daughters WHERE org_name = '${org_name}'`)
+    .then((res) => {
+      callback(res.rows);
+    })
+    .catch((err) => console.error("Error executing query", err.stack));
+};
+
+var getDaughterRowsByParentId = (parent_id, searchWord, callback) => {
+  return pool
+    .query(`SELECT * FROM daughters WHERE parent_id = ${parent_id} AND org_name != '${searchWord}'`)
+    .then((res) => {
+      callback(res.rows);
+    })
+    .catch((err) => console.error("Error executing query", err.stack));
+};
 
 module.exports = {
   insertOrganizationIntoDB: insertOrganizationIntoDB,
   insertDaughterIntoDB: insertDaughterIntoDB,
   getOrganizationByName: getOrganizationByName,
+  getDaughterByName: getDaughterByName,
+  getDaughterRowsByParentId: getDaughterRowsByParentId,
+  getOrganizationByID: getOrganizationByID
 };
 
 /*CREATE organizations table
@@ -66,11 +84,10 @@ module.exports = {
   */
 
 //CREATE daughters table with relation parent in organizations
-  /*pool.query(
+/*pool.query(
     "CREATE TABLE daughters(id SERIAL PRIMARY KEY, parent_id INT NOT NULL, FOREIGN KEY (parent_id) REFERENCES organizations (id), org_name TEXT, UNIQUE(parent_id, org_name));",
     (err, res) => {
       console.log(err, res);
       pool.end();
     }
   );*/
-  
