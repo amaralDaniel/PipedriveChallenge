@@ -1,21 +1,24 @@
 /* eslint-env node */
 const http = require("http");
+const { resolve } = require("path");
 const url = require("url");
 const middleware = require("./middleware");
+var express = require('express');
+const { response } = require("express");
+var app = express()
+const port = 3000
 
-const hostname = "127.0.0.1";
-const port = 3000;
+app.get('/', (req, res) => {
+ 
+    let searchWord = req.query.search;    
+    var getRelationsPromise = new Promise((resolve, reject) => {
+        return middleware.selectItemsFromDB(searchWord, resolve, reject);
+    })
+    getRelationsPromise.then((relations) => res.end(relations));
+  
+})
 
-const server = http.createServer((req, res) => {
-  const { pathname } = url.parse(req.url);
-  console.log(pathname);
-  if (pathname == "/" && req.method == "GET") {
-    let searchWord = url.parse(req.url, true).query.search;
-    console.log(searchWord);
-    res.end(middleware.selectItemsFromDB(searchWord));
-  }
-
-  if (pathname == "/" && req.method == "POST") {
+app.post('/', (req, res) => {
     let body = [];
     //building the body
     req
@@ -28,16 +31,14 @@ const server = http.createServer((req, res) => {
         body = JSON.parse(body);
         res.end(middleware.insertItemsIntoDB(body));
       });
-  } else {
-    handleError(404, res);
-  }
-});
+})
+  
 
 var handleError = (statusCode, res) => {
   res.statusCode = statusCode;
   res.end(`{"error": ${http.STATUS_CODES[statusCode]}}`);
 };
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
+app.listen(port, () => {
+    console.log(`Example app listening at http://localhost:${port}`)
+  })
