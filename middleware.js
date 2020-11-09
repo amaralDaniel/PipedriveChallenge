@@ -5,7 +5,7 @@ var selectItemsFromDB = (searchWord, resolve, reject) => {
 
   dbOperations.getOrganizationByName(searchWord, (organization) => {
     if (organization == undefined) {
-      throw new Error(404);
+      reject({error: true, code: 404, message: "Organization not found"});
     } else {
       dbOperations.getDaughterByName(searchWord, (daughterOrganizations) => {
         if (daughterOrganizations.length == 0) {
