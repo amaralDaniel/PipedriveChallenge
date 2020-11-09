@@ -1,3 +1,4 @@
+const { text } = require("express");
 const { Pool, Client } = require("pg");
 const config = require("./db_connection.json");
 
@@ -10,11 +11,13 @@ const pool = new Pool({
 });
 
 var insertOrganizationIntoDB = (org_name) => {
+    const text = "INSERT INTO organizations(org_name)VALUES($1)ON CONFLICT(org_name)DO NOTHING"
+    const values = [org_name];
   pool
     .query(
-      `INSERT INTO organizations(org_name)VALUES('${org_name}')ON CONFLICT(org_name)DO NOTHING`
+      text, values
     )
-    .then((res) => console.log("UPSERT", org_name))
+    .then((res) => {})
     .catch((err) => console.error("Error executing query", err.stack));
 };
 
@@ -24,13 +27,16 @@ var insertDaughterIntoDB = (org_name, parent_id) => {
   const values = [parent_id, org_name];
   pool
     .query(text, values)
-    .then((res) => console.log("DAUGHTER INSERT", org_name, parent_id))
+    .then((res) => {})
     .catch((err) => console.error("Error executing query", err.stack));
 };
 
 var getOrganizationByName = (org_name, callback) => {
+    const text =
+    "SELECT * FROM organizations WHERE org_name = $1";
+    const values = [org_name];
   return pool
-    .query(`SELECT * FROM organizations WHERE org_name = '${org_name}'`)
+    .query(text, values)
     .then((res) => {
       callback(res.rows[0]);
     })
@@ -38,17 +44,23 @@ var getOrganizationByName = (org_name, callback) => {
 };
 
 var getOrganizationByID = (org_id, callback) => {
-    return pool
-      .query(`SELECT * FROM organizations WHERE id = '${org_id}'`)
-      .then((res) => {
-        callback(res.rows);
-      })
-      .catch((err) => console.error("Error executing query", err.stack));
-  };
+    const text =
+    "SELECT * FROM organizations WHERE id = $1";
+    const values = [org_id];
+  return pool
+    .query(text, values)
+    .then((res) => {
+      callback(res.rows);
+    })
+    .catch((err) => console.error("Error executing query", err.stack));
+};
 
 var getDaughterByName = (org_name, callback) => {
+    const text =
+    "SELECT * FROM daughters WHERE org_name = $1";
+    const values = [org_name]
   return pool
-    .query(`SELECT * FROM daughters WHERE org_name = '${org_name}'`)
+    .query(text, values)
     .then((res) => {
       callback(res.rows);
     })
@@ -56,8 +68,13 @@ var getDaughterByName = (org_name, callback) => {
 };
 
 var getDaughterRowsByParentId = (parent_id, searchWord, callback) => {
+    const text =
+    "SELECT * FROM daughters WHERE parent_id = $1 AND org_name != $2";
+    const values = [parent_id, searchWord];
   return pool
-    .query(`SELECT * FROM daughters WHERE parent_id = ${parent_id} AND org_name != '${searchWord}'`)
+    .query(
+      text, values
+    )
     .then((res) => {
       callback(res.rows);
     })
@@ -70,7 +87,7 @@ module.exports = {
   getOrganizationByName: getOrganizationByName,
   getDaughterByName: getDaughterByName,
   getDaughterRowsByParentId: getDaughterRowsByParentId,
-  getOrganizationByID: getOrganizationByID
+  getOrganizationByID: getOrganizationByID,
 };
 
 /*CREATE organizations table
