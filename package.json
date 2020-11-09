@@ -1,0 +1,17 @@
+{
+  "name": "pipedrivechallenge",
+  "version": "1.0.0",
+  "description": "Pipedrive code challenge by Daniel Amaral",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-paginate": "^1.0.2",
+    "pg": "^8.4.2"
+  }
+}
