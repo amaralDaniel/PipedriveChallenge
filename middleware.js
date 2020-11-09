@@ -8,65 +8,74 @@ var selectItemsFromDB = (searchWord, resolve, reject) => {
       throw new Error(404);
     } else {
       dbOperations.getDaughterByName(searchWord, (daughterOrganizations) => {
-        daughterOrganizations.forEach((daughter, index) => {
-          let parent_id = daughter.parent_id;
-    
-          dbOperations.getDaughterRowsByParentId(
-            parent_id,
-            searchWord,
-            (sisterRows) => {
-              sisterRows.forEach((sister) => {
-                if (!checkIfOrgNameAlreadyExists(relations, sister)) {
-                  relations.push({
-                    relationship_type: "sister",
-                    org_name: sister.org_name,
-                  });
-                }
-              });
-    
-              dbOperations.getOrganizationByName(searchWord, (organization) => {
-                dbOperations.getDaughterRowsByParentId(
-                  organization.id,
-                  searchWord,
-                  (daughterRows) => {
-                    daughterRows.forEach((daughter) => {
-                      if (!checkIfOrgNameAlreadyExists(relations, daughter)) {
-                        relations.push({
-                          relationship_type: "daughter",
-                          org_name: daughter.org_name,
-                        });
-                      }
+        if (daughterOrganizations.length == 0) {
+          resolve(relations);
+        } else {
+          daughterOrganizations.forEach((daughter, index) => {
+            let parent_id = daughter.parent_id;
+
+            dbOperations.getDaughterRowsByParentId(
+              parent_id,
+              searchWord,
+              (sisterRows) => {
+                sisterRows.forEach((sister) => {
+                  if (!checkIfOrgNameAlreadyExists(relations, sister)) {
+                    relations.push({
+                      relationship_type: "sister",
+                      org_name: sister.org_name,
                     });
-    
-                    dbOperations.getOrganizationByID(
-                      parent_id,
-                      (parentOrganization) => {
-                        parentOrganization.forEach((parent) => {
-                          if (!checkIfOrgNameAlreadyExists(relations, parent)) {
+                  }
+                });
+
+                dbOperations.getOrganizationByName(
+                  searchWord,
+                  (organization) => {
+                    dbOperations.getDaughterRowsByParentId(
+                      organization.id,
+                      searchWord,
+                      (daughterRows) => {
+                        daughterRows.forEach((daughter) => {
+                          if (
+                            !checkIfOrgNameAlreadyExists(relations, daughter)
+                          ) {
                             relations.push({
-                              relationship_type: "parent",
-                              org_name: parent.org_name,
+                              relationship_type: "daughter",
+                              org_name: daughter.org_name,
                             });
                           }
                         });
-    
-                        if (index == daughterOrganizations.length - 1) {
-                          orderArrayByName(relations);
-                          resolve(relations);
-                        }
+
+                        dbOperations.getOrganizationByID(
+                          parent_id,
+                          (parentOrganization) => {
+                            parentOrganization.forEach((parent) => {
+                              if (
+                                !checkIfOrgNameAlreadyExists(relations, parent)
+                              ) {
+                                relations.push({
+                                  relationship_type: "parent",
+                                  org_name: parent.org_name,
+                                });
+                              }
+                            });
+
+                            if (index == daughterOrganizations.length - 1) {
+                              orderArrayByName(relations);
+                              resolve(relations);
+                            }
+                          }
+                        );
                       }
                     );
                   }
                 );
-              });
-            }
-          );
-        });
+              }
+            );
+          });
+        }
       });
     }
-  })
-
-  
+  });
 };
 
 var insertItemsIntoDB = (body, resolve, reject) => {
@@ -91,10 +100,12 @@ var insertItemsIntoDB = (body, resolve, reject) => {
           dbOperations.insertDaughterIntoDB(singleDaughter.org_name, parent.id);
         });
       }
-      if(index == daughters.length -1){
+      if (index == daughters.length - 1) {
         resolve("Items were inserted into the DB");
       }
     });
+  } else {
+    resolve("Items were inserted into the DB");
   }
 };
 
