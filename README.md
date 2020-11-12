@@ -1,5 +1,21 @@
 # Pipedrive Challenge
 
+# Project setup
+
+Assuming that Postgres is up and running and that two table "organizations" and "daughters" are created, the file db_connection.json should be setup in order to allow access from the project to the DB. The information required is:
+    
+    "DB_USER" : [user],
+    "DB_PASSWORD" : [password],
+    "DB_HOST" : "localhost",
+    "DB_PORT" : [port], //usually 5432 
+    "DB_NAME" : [name of the database]
+
+After the DB is set and the connection is made possible, run:
+
+    npm install 
+
+In order to install the dependecies for the project. After this, the project should be ready to run.
+
 ## Unit testing
 In the terminal with the location on the root folder, run:
 
