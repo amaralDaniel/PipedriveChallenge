@@ -70,11 +70,6 @@ app.post("/", (req, res, next) => {
     });
 });
 
-var handleError = (statusCode, res) => {
-  res.statusCode = statusCode;
-  res.end(`{"error": ${http.STATUS_CODES[statusCode]}}`);
-};
-
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
 });
